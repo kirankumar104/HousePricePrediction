@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #e0f7fa, #f0f2f5);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .logout-btn {
+            background-color: #dc3545;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin: 25px 0 10px 0;
+        }
+
+        .employee-container {
+            padding: 10px 20px 30px 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 20px;
+        }
+
+        .employee-card {
+            width: 400px;
+            height: 100px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeSlideIn 0.6s ease forwards;
+            border: 1px #007bff solid;
+        }
+
+        .employee-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+        }
+
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .employee-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .employee-info {
+            font-size: 14px;
+            color: #444;
+            line-height: 1.5;
+        }
+
+        .assign-btn {
+            background-color: #28a745;
+            border: none;
+            color: white;
+            padding: 12px 12px;
+            font-size: 13px;
+            border-radius: 5px;
+            font-weight: bolder;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .assign-btn:hover {
+            background-color: #218838;
+        }
+
+        .module-section {
+            display: none;
+            margin-top: 55px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+            
+            animation: slideDown 0.4s ease-in-out forwards;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: scaleY(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scaleY(1);
+            }
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        .add-module-form {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button[type="submit"] {
+            background-color: #007bff;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    <script>
+        function toggleModuleSection(username) {
+            const section = document.getElementById('modules-' + username);
+            if (section.style.display === 'block') {
+                section.style.display = 'none';
+            } else {
+                section.style.display = 'block';
+            }
+        }
+    </script>
+</head>
+<body>
+
+<header>
+    <div class="title">Software Personnel Management System</div>
+    <form action="/logout" method="GET">
+        <button class="logout-btn">Logout</button>
+    </form>
+</header>
+
+<h1>Admin Dashboard</h1>
+
+<div class="employee-container">
+    {% for emp in employees %}
+    <div class="employee-card">
+        <div class="employee-header">
+            <div class="employee-info">
+                <strong>{{ emp.name }}</strong><br>
+                <strong>Username:</strong> {{ emp.username }}<br>
+                <strong>Login:</strong> {{ emp.login_time or 'N/A' }}<br>
+                <strong>Logout:</strong> {{ emp.logout_time or 'N/A' }}
+            </div>
+            <button class="assign-btn" onclick="toggleModuleSection('{{ emp.username }}')">Assign Module</button>
+        </div>
+
+        <div class="module-section" id="modules-{{ emp.username }}">
+            <div class="module-list">
+                <strong>Completed Modules:</strong>
+                <ul>
+                    {% for mod in emp.modules_completed %}
+                        <li>{{ mod }}</li>
+                    {% else %}
+                        <li>No modules completed</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="module-list">
+                <strong>Pending Modules:</strong>
+                <ul>
+                    {% for mod in emp.modules_pending %}
+                        <li>{{ mod }}</li>
+                    {% else %}
+                        <li>No modules pending</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <form class="add-module-form" method="POST" action="/assign_module/{{ emp.username }}">
+                <input type="text" name="module_name" placeholder="New Module Name" required>
+                <button type="submit">+</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+<script>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            alert("{{ messages[0] }}");
+        {% endif %}
+    {% endwith %}
+</script>
+
+</body>
+</html>
